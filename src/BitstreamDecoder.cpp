@@ -1395,7 +1395,7 @@ void scan_bitstream_mfm_fm (TrackData &trackdata)
 void scan_flux_mfm_fm (TrackData &trackdata, DataRate last_datarate)
 {
 	// Small speed variations to simulate jitter.
-	std::vector<int> flux_scales{ 100, 100-JITTER_PERCENT, 100+JITTER_PERCENT };
+	std::vector<int> flux_scales{ opt.scale, 100, 100-JITTER_PERCENT, 100+JITTER_PERCENT };
 	if (opt.nowobble || !JITTER_PERCENT)
 		flux_scales.resize(1);
 
