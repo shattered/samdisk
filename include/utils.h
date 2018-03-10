@@ -236,6 +236,7 @@ void hex_dump (ForwardIter it, ForwardIter itEnd, int start_offset = 0, colour *
 {
 	assert(per_line != 0);
 	static const char hex[] = "0123456789ABCDEF";
+	static const char rad[] = " abcdefghijklmnopqrstuvwxyz$.%0123456789:";
 
 	it += start_offset;
 	if (pColours)
@@ -248,6 +249,7 @@ void hex_dump (ForwardIter it, ForwardIter itEnd, int start_offset = 0, colour *
 	while (it < itEnd)
 	{
 		std::string text(per_line, ' ');
+		std::string rad50(per_line*2, ' ');
 
 		if (c != colour::none)
 		{
@@ -262,7 +264,7 @@ void hex_dump (ForwardIter it, ForwardIter itEnd, int start_offset = 0, colour *
 
 		base_offset += per_line;
 
-		for (size_t i = 0; i < per_line; i++)
+		for (size_t i = 0, j = 0; i < per_line; i++)
 		{
 			if (start_offset-- <= 0 && it < itEnd)
 			{
@@ -276,8 +278,17 @@ void hex_dump (ForwardIter it, ForwardIter itEnd, int start_offset = 0, colour *
 					}
 				}
 
-				auto b = *it++;
+				auto b = *it;
 				text[i] = std::isprint(b) ? b : '.';
+				if(i%2==0)
+				{
+					auto val = (b) + (*(it+1) << 8);
+
+					rad50[j++] = rad[val/(050*050)];
+					rad50[j++] = rad[(val/050)%050];
+					rad50[j++] = rad[val%050];
+				}
+				it++;
 				util::cout << hex[b >> 4] << hex[b & 0x0f] << ' ';
 			}
 			else
@@ -286,7 +297,7 @@ void hex_dump (ForwardIter it, ForwardIter itEnd, int start_offset = 0, colour *
 			}
 		}
 
-		util::cout << colour::none << " " << text << "\n";
+		util::cout << colour::none << " " << text << "  " << rad50 << "\n";
 	}
 }
 
