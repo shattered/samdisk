@@ -138,7 +138,7 @@ extern "C" {
 enum {
 	OPT_RPM = 256, OPT_LOG, OPT_VERSION, OPT_HEAD0, OPT_HEAD1, OPT_GAPMASK, OPT_MAXCOPIES,
 	OPT_MAXSPLICE, OPT_CHECK8K, OPT_BYTES, OPT_HDF, OPT_ORDER, OPT_SCALE, OPT_PLLADJUST,
-	OPT_PLLPHASE, OPT_ACE, OPT_MX, OPT_AGAT, OPT_NOFM, OPT_STEPRATE, OPT_PREFER };
+	OPT_PLLPHASE, OPT_ACE, OPT_MX, OPT_AGAT, OPT_NOFM, OPT_STEPRATE, OPT_QUARTER, OPT_PREFER };
 
 struct option long_options[] =
 {
@@ -241,6 +241,7 @@ struct option long_options[] =
 	{ "scale",		required_argument, nullptr, OPT_SCALE },
 	{ "pll-adjust", required_argument, nullptr, OPT_PLLADJUST },
 	{ "pll-phase",  required_argument, nullptr, OPT_PLLPHASE },
+	{ "quarter",	required_argument, nullptr, OPT_QUARTER },
 
 	{ 0, 0, 0, 0 }
 };
@@ -421,6 +422,12 @@ bool ParseCommandLine (int argc_, char *argv_[])
 
 			case OPT_BYTES:
 				util::str_range(optarg, opt.bytes_begin, opt.bytes_end);
+				break;
+
+			case OPT_QUARTER:
+				opt.quarter = util::str_value<int>(optarg);
+				if (opt.quarter < 0 || opt.quarter > 3)
+					throw util::exception("invalid quarter track offset '", optarg, "', expected 0-3");
 				break;
 
 			case OPT_VERSION:
