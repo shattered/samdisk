@@ -299,7 +299,7 @@ void scan_bitstream_apple (TrackData &trackdata)
 
 				// stadard epilogue is DE AA EB, but third byte is not validated by RWTS routine
 				if (idraw[8] == 0xde && (idraw[9] == 0xaa || idraw[9] == 0xab) 
-#if 1
+#if 0
 				&& id[1] == trackdata.cylhead.cyl
 #endif
 				)

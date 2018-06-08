@@ -75,15 +75,21 @@ private:
 
 bool ReadDII (MemFile &file, std::shared_ptr<Disk> &disk)
 {
-	if (!IsFileExt(file.name(), "dii"))
+	if (!IsFileExt(file.name(), "dii") && util::lowercase(file.name().substr(0, 3)) != "dii")
 		return false;
 
 	auto dii_disk = std::make_shared<DIIDisk>();
 
+	if (opt.debug)
+	util::cout << util::fmt ("force %d quarter %d\n", opt.force, opt.quarter);
+
+#if 0
 	for (int cyl=0; cyl < 141; cyl++)
 	{
 		int track = (cyl + opt.quarter) / 4;
 		if (track < 0 || track > 34) continue;
+
+		int quarter = opt.force ? (-opt.quarter) : opt.quarter;
 
 		CylHead cylhead(track, 0);
 		std::vector<uint16_t> dii_data(file.size() / 2 / 141);
@@ -91,14 +97,30 @@ bool ReadDII (MemFile &file, std::shared_ptr<Disk> &disk)
 		if (!file.read(dii_data))
 			throw util::exception("short file reading data");
 
-//		util::cout << util::fmt ("cyl %d dii_data size %d file size %d\n", cyl, dii_data.size(), file.size());
+		if (opt.debug)
+		util::cout << util::fmt ("cyl %3d track %2d dii_data size %d file size %d\n", cyl, track, dii_data.size(), file.size());
 
 //		if ((cyl % 4) == (opt.force ? (-opt.quarter) : opt.quarter))
-		if ((cyl % 4) == opt.force ? (-opt.quarter) : opt.quarter)
+		if ((cyl % 4) == quarter)
 		{
 			dii_disk->add_track_data(cylhead, std::move(dii_data));
 		}
 	}
+#else
+	for (int cyl=0; cyl < 141; cyl++)
+	{
+		CylHead cylhead(cyl, 0);
+		std::vector<uint16_t> dii_data(file.size() / 2 / 141);
+
+		if (!file.read(dii_data))
+			throw util::exception("short file reading data");
+
+		if (opt.debug)
+		util::cout << util::fmt ("cyl %3d dii_data size %d file size %d\n", cyl, dii_data.size(), file.size());
+
+		dii_disk->add_track_data(cylhead, std::move(dii_data));
+	}
+#endif
 
 	dii_disk->strType = "DII";
 	disk = dii_disk;

@@ -2,7 +2,7 @@
 #define DISKUTIL_H
 
 const int MAX_SIDES = 2;
-const int MAX_TRACKS = 128;			// Internal format maximum, needed for 1MB TRD
+const int MAX_TRACKS = 144;			// Internal format maximum, needed for 1MB TRD and quarter-track Apple II
 const int MAX_SECTORS = 144;
 
 const int MIN_SECTOR_SIZE = 128;
