@@ -214,6 +214,7 @@ enum { GAPS_AUTO = -1, GAPS_NONE, GAPS_CLEAN, GAPS_ALL };
 
 // copy
 bool ImageToImage (const std::string &src_path, const std::string &dst_path);
+bool DIImageToImage (const std::string &src_path, const std::string &dst_path);
 bool Image2Trinity (const std::string &path, const std::string &trinity_path);
 bool Hdd2Hdd (const std::string &src_path, const std::string &dst_path);
 bool Hdd2Boot (const std::string &hdd_path, const std::string &boot_path);

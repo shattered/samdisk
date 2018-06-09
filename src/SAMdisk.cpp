@@ -6,10 +6,10 @@
 #include "BlockDevice.h"
 #include "FluxDecoder.h"
 
-enum { cmdCopy, cmdScan, cmdFormat, cmdList, cmdView, cmdInfo, cmdDir, cmdRpm, cmdVerify, cmdUnformat, cmdVersion, cmdCreate, cmdEnd };
+enum { cmdCopy, cmdScan, cmdFormat, cmdList, cmdView, cmdInfo, cmdDir, cmdRpm, cmdVerify, cmdUnformat, cmdVersion, cmdCreate, cmdDiicopy, cmdEnd };
 
 static const char* aszCommands[] =
-{ "copy",  "scan",  "format",  "list",  "view",  "info",  "dir",  "rpm",  "verify",  "unformat",  "version",  "create",  nullptr };
+{ "copy",  "scan",  "format",  "list",  "view",  "info",  "dir",  "rpm",  "verify",  "unformat",  "version",  "create",  "diicopy", nullptr };
 
 
 OPTIONS opt;
@@ -579,6 +579,16 @@ int main (int argc_, char *argv_[])
 					f = Boot2Hdd(opt.szSource, opt.szTarget);				// file -> boot
 				else if (nSource == argBootSector && nTarget == argBootSector)
 					f = Boot2Boot(opt.szSource, opt.szTarget);				// boot -> boot
+				else
+					Usage();
+
+				break;
+			}
+
+			case cmdDiicopy:
+			{
+				if (nSource == argDisk && nTarget == argDisk)
+					f = DIImageToImage(opt.szSource, opt.szTarget);
 				else
 					Usage();
 
