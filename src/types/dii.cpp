@@ -106,12 +106,30 @@ bool ReadDII (MemFile &file, std::shared_ptr<Disk> &disk)
 			dii_disk->add_track_data(cylhead, std::move(dii_data));
 		}
 	}
-#else
+#endif
+#if 1
 	for (int cyl=0; cyl < 141; cyl++)
 	{
 		CylHead cylhead(cyl, 0);
 		std::vector<uint16_t> dii_data(file.size() / 2 / 141);
 
+		if (!file.read(dii_data))
+			throw util::exception("short file reading data");
+
+		if (opt.debug)
+		util::cout << util::fmt ("cyl %3d dii_data size %d file size %d\n", cyl, dii_data.size(), file.size());
+
+		dii_disk->add_track_data(cylhead, std::move(dii_data));
+	}
+#else
+	for (int cyl=0; cyl < 35; cyl++)
+	{
+		CylHead cylhead(cyl, 0);
+		int data_size = file.size() / 2 / 141;
+		std::vector<uint16_t> dii_data((cyl == 34 ? 6 : 8) * data_size);
+
+		if (cyl)
+			file.seek((cyl * 4 - 2) * data_size * 2);
 		if (!file.read(dii_data))
 			throw util::exception("short file reading data");
 

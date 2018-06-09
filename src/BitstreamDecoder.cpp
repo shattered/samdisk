@@ -314,7 +314,7 @@ void scan_bitstream_apple (TrackData &trackdata)
 						track.add(std::move(s));
 					}
 				}
-				else if (!track.empty())
+				else if (!track.empty() && 0)
 				{
 					Message(msgWarning, "unknown %s address mark epilogue (%02X%02X%02X) at offset %u on %s",
 						to_string(bitbuf.encoding).c_str(), idraw[8], idraw[9], idraw[10],
