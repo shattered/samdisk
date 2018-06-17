@@ -614,7 +614,7 @@ bool RepairTrack (const CylHead &cylhead, Track &track, const Track &src_track)
 				changed = true;
 			}
 		}
-		else
+		else if (!opt.force)
 		{
 			// Default to adding to the end of the track.
 			auto insert_idx = track.size();

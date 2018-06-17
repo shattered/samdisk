@@ -94,6 +94,84 @@ bool ImageToImage (const std::string &src_path, const std::string &dst_path)
 	return WriteImage(dst_path, dst_disk);
 }
 
+bool DIImageToImage (const std::string &src_path, const std::string &dst_path)
+{
+	auto src_disk = std::make_shared<Disk>();
+	auto dst_disk = std::make_shared<Disk>();
+	ScanContext context_src, context_dst;
+
+	opt.encoding = Encoding::Apple;
+
+	// Read the source image
+	if (!ReadImage(src_path, src_disk))
+		return false;
+
+	// Generate a fake target image
+	for (int t = 0; t < 35; t++)
+	{
+		CylHead cylhead(t, 0);
+		Track track(16);
+
+		for (int i = 0; i < 16; ++i)
+		{
+			Sector sector(DataRate::_250K, Encoding::Apple, Header(cylhead, i, 1));
+			sector.datas().clear();
+			track.add(std::move(sector));
+		}
+
+		dst_disk->write(cylhead, std::move(track));
+	}
+
+	// Limit to our maximum geometry, and default to copy everything present in the source
+	ValidateRange(opt.range, MAX_TRACKS, MAX_SIDES, 1, 35, 1);
+
+	// Copy the range of tracks to the target image
+	//
+	// For each track in target image, try to find data in 8 quarter tracks of source image, and merge them
+	opt.range.each([&] (const CylHead &cylhead) {
+//		Message(msgStatus, "Reading quarter tracks for %s", CH(cylhead.cyl, cylhead.head));
+		for (int m = std::max(0, (cylhead.cyl * 4) - 8); m < std::min(140, (cylhead.cyl * 4) + 8); m++)
+		{
+		auto src_data = src_disk->read(CylHead(m, 0));
+		auto src_track = src_data.track();
+
+		if (src_data.has_bitstream())
+		{
+			auto bitstream = src_data.bitstream();
+			if (NormaliseBitstream(bitstream))
+			{
+				src_data = TrackData(src_data.cylhead, std::move(bitstream));
+				src_track = src_data.track();
+			}
+		}
+
+		NormaliseTrack(cylhead, src_track);
+
+		{
+			auto dst_track = dst_disk->read_track(cylhead);
+			NormaliseTrack(cylhead, dst_track);
+
+			// Repair the target track using the source track.
+			RepairTrack(cylhead, dst_track, src_track);
+
+			if (opt.verbose && (m + 1) == std::min(140, (cylhead.cyl * 4) + 8))
+			{
+				ScanTrack(cylhead, dst_track, context_dst);
+			}
+
+			dst_disk->write(cylhead, std::move(dst_track));
+		}
+		} // m
+	}, opt.verbose != 0);
+
+	// Copy any metadata not already present in the target (emplace doesn't replace)
+	for (const auto &m : src_disk->metadata)
+		dst_disk->metadata.emplace(m);
+
+	// Write the new/merged target image
+	return WriteImage(dst_path, dst_disk);
+}
+
 bool Image2Trinity (const std::string &path, const std::string &/*trinity_path*/)	// ToDo: use trinity_path for record
 {
 	auto disk = std::make_shared<Disk>();

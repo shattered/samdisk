@@ -310,7 +310,7 @@ void scan_bitstream_apple (TrackData &trackdata)
 						track.add(std::move(s));
 					}
 				}
-				else if (!track.empty())
+				else if (!track.empty() && opt.verbose)
 				{
 					Message(msgWarning, "unknown %s address mark epilogue (%02X%02X%02X) at offset %u on %s",
 						to_string(bitbuf.encoding).c_str(), idraw[8], idraw[9], idraw[10],
@@ -359,9 +359,6 @@ void scan_bitstream_apple (TrackData &trackdata)
 			bitbuf.read_byte();
 			bitbuf.read_byte();
 			bitbuf.read_byte();
-
-			// magic
-			if (1 == bitbuf.read1()) bitbuf.seek(bitbuf.tell()-1);
 
 			// Determine the offset and distance to the next IDAM, taking care of track wrap if it's the final sector
 			auto next_idam_offset = final_sector ? track.begin()->offset : std::next(it)->offset;
@@ -442,7 +439,7 @@ void scan_bitstream_apple (TrackData &trackdata)
 				gcrdata[0], gcrdata[1], decdata[0], decdata[1],
 				gcrdata[343], gcrdata[344], gcrdata[345],
 				invalid, distance, min_distance, max_distance, extent_bytes);
-			bool bad_crc = (0 != cksum);
+			bool bad_crc = (0 != cksum || invalid);
 
 			sector.add(std::move(outdata), bad_crc, invalid ? 0xf8 : 0xfb);
 
