@@ -260,7 +260,7 @@ void scan_bitstream_apple (TrackData &trackdata)
 			break;
 
 		dword = (dword << 1) | bitbuf.read1();
-		if (opt.debug && 0)
+		if (opt.debug && 1)
 		{
 			auto o = bitbuf.tell();
 			Data x(4);
@@ -298,9 +298,13 @@ void scan_bitstream_apple (TrackData &trackdata)
 					trackdata.cylhead.cyl);
 
 				// stadard epilogue is DE AA EB, but third byte is not validated by RWTS routine
-				if (idraw[8] == 0xde && (idraw[9] == 0xaa || idraw[9] == 0xab))
+				if (idraw[8] == 0xde && (idraw[9] == 0xaa || idraw[9] == 0xab) 
+#if 1
+				&& id[1] == trackdata.cylhead.cyl
+#endif
+				)
+//				if (idraw[8] == 0xaf)
 				{
-
 					if ((id[0] ^ id[1] ^ id[2]) == id[3] || (opt.idcrc == 1))
 					{
 						Sector s(bitbuf.datarate, Encoding::Apple, Header(id[1], 0, id[2], SizeToCode(256)));
@@ -442,7 +446,7 @@ void scan_bitstream_apple (TrackData &trackdata)
 				gcrdata[0], gcrdata[1], decdata[0], decdata[1],
 				gcrdata[343], gcrdata[344], gcrdata[345],
 				invalid, distance, min_distance, max_distance, extent_bytes);
-			bool bad_crc = (0 != cksum);
+			bool bad_crc = (0 != cksum || invalid);
 
 			sector.add(std::move(outdata), bad_crc, invalid ? 0xf8 : 0xfb);
 

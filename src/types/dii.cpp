@@ -80,9 +80,12 @@ bool ReadDII (MemFile &file, std::shared_ptr<Disk> &disk)
 
 	auto dii_disk = std::make_shared<DIIDisk>();
 
-	for (unsigned int cyl=0; cyl < 141; cyl++)
+	for (int cyl=0; cyl < 141; cyl++)
 	{
-		CylHead cylhead((cyl / 4), 0);
+		int track = (cyl + opt.quarter) / 4;
+		if (track < 0 || track > 34) continue;
+
+		CylHead cylhead(track, 0);
 		std::vector<uint16_t> dii_data(file.size() / 2 / 141);
 
 		if (!file.read(dii_data))
@@ -90,7 +93,8 @@ bool ReadDII (MemFile &file, std::shared_ptr<Disk> &disk)
 
 //		util::cout << util::fmt ("cyl %d dii_data size %d file size %d\n", cyl, dii_data.size(), file.size());
 
-		if ((cyl % 4) == opt.quarter)
+//		if ((cyl % 4) == (opt.force ? (-opt.quarter) : opt.quarter))
+		if ((cyl % 4) == opt.force ? (-opt.quarter) : opt.quarter)
 		{
 			dii_disk->add_track_data(cylhead, std::move(dii_data));
 		}

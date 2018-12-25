@@ -426,8 +426,7 @@ bool ParseCommandLine (int argc_, char *argv_[])
 
 			case OPT_QUARTER:
 				opt.quarter = util::str_value<int>(optarg);
-				if (opt.quarter < 0 || opt.quarter > 3)
-					throw util::exception("invalid quarter track offset '", optarg, "', expected 0-3");
+				if (opt.force) opt.quarter = -opt.quarter;
 				break;
 
 			case OPT_VERSION:
